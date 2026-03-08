@@ -11,6 +11,8 @@ from apps.telemetry.repositories import TelemetryAggregateRepository
 
 
 class TelemetryTimeseriesService:
+    """Builds a chart-ready timeseries payload with caching and point capping."""
+
     STATS = ["min", "max", "avg"]
     MAX_POINTS = 300
 
@@ -30,6 +32,7 @@ class TelemetryTimeseriesService:
         cache_key = self._cache.build_timeseries_key(device_id=device_id, start_iso=start_iso, end_iso=end_iso)
 
         try:
+            # Fast path: return precomputed payload for the exact interval.
             cached = self._cache.get_json(cache_key)
             if cached:
                 cached["meta"]["cache_hit"] = True
@@ -44,6 +47,7 @@ class TelemetryTimeseriesService:
             start_time=start_time,
             end_time=end_time,
         )
+        # Response shape is normalized here so frontend does not know DB schema details.
         payload = self._build_payload(device_id, start_time, end_time, selection.table_name, selection.expected_buckets, rows)
 
         try:
@@ -63,12 +67,14 @@ class TelemetryTimeseriesService:
         expected_buckets: int,
         rows: list[dict[str, Any]],
     ) -> dict[str, Any]:
+        # Devices are expected to have one metric; pick the dominant metric defensively.
         selected_metric_name = self._select_metric_name(rows)
         series_data: dict[str, list[dict[str, Any]]] = defaultdict(list)
         unique_buckets: set[str] = set()
 
         for row in rows:
             metric_name = row["metric_name"]
+            # Ignore out-of-contract rows if multiple metrics appear in the same interval.
             if selected_metric_name and metric_name != selected_metric_name:
                 continue
             bucket = row["bucket"].astimezone(UTC).isoformat()
@@ -109,11 +115,13 @@ class TelemetryTimeseriesService:
         for row in rows:
             buckets_per_metric[row["metric_name"]].add(row["bucket"])
 
+        # Prefer the metric covering the highest number of buckets; tie-break by name.
         ranked_metrics = sorted(buckets_per_metric.items(), key=lambda item: (-len(item[1]), item[0]))
         return ranked_metrics[0][0]
 
     def _downsample_points(self, points: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if len(points) <= self.MAX_POINTS:
             return points
+        # Index-based stride keeps ordering and avoids heavy resampling logic in API path.
         stride = max(1, math.ceil(len(points) / self.MAX_POINTS))
         return points[::stride]

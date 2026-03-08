@@ -2,6 +2,8 @@ from apps.telemetry.repositories import DeviceRepository
 
 
 class DeviceService:
+    """Service wrapper for device listing use-cases."""
+
     def __init__(self, device_repository: DeviceRepository | None = None) -> None:
         self._device_repository = device_repository or DeviceRepository()
 

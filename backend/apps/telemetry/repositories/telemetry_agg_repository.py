@@ -5,6 +5,8 @@ from django.db import connection
 
 
 class TelemetryAggregateRepository:
+    """Reads from pre-aggregated tables used by the timeseries endpoint."""
+
     ALLOWED_AGG_TABLES = {
         "telemetry_agg_hourly",
         "telemetry_agg_daily",
@@ -19,6 +21,7 @@ class TelemetryAggregateRepository:
         start_time: datetime,
         end_time: datetime,
     ) -> list[dict[str, Any]]:
+        # Table name is dynamic, so keep a strict allow-list before interpolating SQL.
         if table_name not in self.ALLOWED_AGG_TABLES:
             raise ValueError(f"Unsupported aggregate table: {table_name}")
 

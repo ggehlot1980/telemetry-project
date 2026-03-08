@@ -2,6 +2,8 @@ from rest_framework import serializers
 
 
 class RawTelemetryQuerySerializer(serializers.Serializer):
+    """Validates querystring parameters for raw telemetry listing."""
+
     device_id = serializers.IntegerField(required=False)
     start_time = serializers.DateTimeField(required=True)
     end_time = serializers.DateTimeField(required=True)
@@ -20,6 +22,7 @@ class RawTelemetryQuerySerializer(serializers.Serializer):
     device_name = serializers.CharField(required=False, allow_blank=False)
 
     def validate(self, attrs):
+        # Enforce positive duration to keep SQL filters meaningful.
         if attrs["start_time"] >= attrs["end_time"]:
             raise serializers.ValidationError("start_time must be before end_time.")
         return attrs

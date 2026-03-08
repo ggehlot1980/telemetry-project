@@ -18,6 +18,7 @@ import { TelemetryApiService } from '../../core/services/telemetry-api.service';
 })
 export class RawTelemetryComponent implements OnInit {
   readonly pageSize = 50;
+  // Number of page buttons shown around the current page.
   readonly pageWindowSize = 7;
 
   devices: Device[] = [];
@@ -119,6 +120,7 @@ export class RawTelemetryComponent implements OnInit {
 
     const requestedPage = Math.trunc(this.pageJumpValue);
     const maxPage = Math.max(this.totalPages, 1);
+    // Clamp page input to valid bounds to avoid empty/server-invalid requests.
     const boundedPage = Math.max(1, Math.min(requestedPage, maxPage));
     this.pageJumpValue = boundedPage;
     this.goToPage(boundedPage);
@@ -142,6 +144,7 @@ export class RawTelemetryComponent implements OnInit {
     const maxPage = Math.max(this.totalPages, 1);
     const halfWindow = Math.floor(this.pageWindowSize / 2);
 
+    // Create a sliding page window centered on the current page when possible.
     let start = Math.max(1, this.page - halfWindow);
     let end = Math.min(maxPage, start + this.pageWindowSize - 1);
     start = Math.max(1, end - this.pageWindowSize + 1);
@@ -176,6 +179,7 @@ export class RawTelemetryComponent implements OnInit {
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
         next: (response) => {
+          // Backend is the source of truth for page metadata after each request.
           this.rowData = response.rows;
           this.totalPages = response.total_pages;
           this.totalRows = response.total_rows;

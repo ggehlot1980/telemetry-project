@@ -13,6 +13,8 @@ class _AggregateCandidate:
 
 
 class AggregateQueryRouter:
+    """Selects the aggregate table whose bucket density best fits chart rendering."""
+
     TARGET_MIN_BUCKETS = 200
     TARGET_MAX_BUCKETS = 300
 
@@ -30,6 +32,7 @@ class AggregateQueryRouter:
 
         estimates = []
         for candidate in self.CANDIDATES:
+            # Estimate how many points the chart would get if this table is used.
             estimated_buckets = max(1, math.ceil(duration / candidate.bucket_size))
             estimates.append(
                 AggregateSelection(
@@ -47,8 +50,10 @@ class AggregateQueryRouter:
         if within_target:
             return min(within_target, key=lambda x: x.expected_buckets)
 
+        # If we cannot stay in-range, prefer the smallest above-range option.
         above_target = [estimate for estimate in estimates if estimate.expected_buckets > self.TARGET_MAX_BUCKETS]
         if above_target:
             return min(above_target, key=lambda x: x.expected_buckets)
 
+        # Last fallback for short intervals: pick the finest available granularity.
         return max(estimates, key=lambda x: x.expected_buckets)

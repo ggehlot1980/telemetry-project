@@ -5,6 +5,8 @@ from apps.telemetry.repositories import TelemetryRawRepository
 
 
 class RawTelemetryService:
+    """Coordinates raw telemetry retrieval from repository layer."""
+
     def __init__(self, raw_repository: TelemetryRawRepository | None = None) -> None:
         self._raw_repository = raw_repository or TelemetryRawRepository()
 

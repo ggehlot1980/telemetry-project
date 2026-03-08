@@ -7,6 +7,8 @@ from apps.telemetry.services import TelemetryTimeseriesService
 
 
 class TelemetryTimeseriesView(APIView):
+    """Returns chart-ready timeseries aggregates for a single device."""
+
     service_class = TelemetryTimeseriesService
 
     def get(self, request):

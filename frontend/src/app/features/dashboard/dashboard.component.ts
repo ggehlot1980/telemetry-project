@@ -19,6 +19,7 @@ import { TelemetryApiService } from '../../core/services/telemetry-api.service';
 export class DashboardComponent implements OnInit {
   readonly Highcharts: typeof Highcharts = Highcharts;
   chartOptions: Highcharts.Options = this.createDefaultChartOptions();
+  // Required by highcharts-angular to trigger option updates after async responses.
   updateFlag = false;
   readonly oneToOneFlag = true;
 
@@ -79,6 +80,7 @@ export class DashboardComponent implements OnInit {
     const yAxisTitle = response.meta.metric_name ?? 'Metric Value';
     const series: Highcharts.SeriesLineOptions[] = response.series
       .map((line) => {
+        // Convert API points into [x, y] tuples expected by Highcharts datetime series.
         const data: Array<[number, number | null]> = line.points
           .map((point) => {
             const timestamp = Date.parse(point.bucket);
@@ -98,6 +100,7 @@ export class DashboardComponent implements OnInit {
           data
         };
       })
+      // Hide empty lines when selected interval has no rows for a stat.
       .filter((line) => line.data.length > 0);
 
     return {

@@ -7,11 +7,14 @@ from apps.telemetry.services import RawTelemetryService
 
 
 class RawTelemetryView(APIView):
+    """Exposes server-side paginated raw telemetry rows."""
+
     service_class = RawTelemetryService
 
     def get(self, request):
         serializer = RawTelemetryQuerySerializer(data=request.query_params)
         serializer.is_valid(raise_exception=True)
+        # DRF serializer centralizes coercion and validation for query params.
         validated = serializer.validated_data
 
         payload = self.service_class().get_raw_telemetry(

@@ -2,6 +2,8 @@ from django.db import models
 
 
 class Device(models.Model):
+    """Unmanaged mapping of the `devices` table."""
+
     device_id = models.BigIntegerField(primary_key=True)
     device_name = models.TextField(blank=True, null=True)
     device_type = models.TextField(blank=True, null=True)

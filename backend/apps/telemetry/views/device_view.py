@@ -6,6 +6,8 @@ from apps.telemetry.services import DeviceService
 
 
 class DeviceListView(APIView):
+    """Returns the full device catalog used by dashboard/raw telemetry filters."""
+
     service_class = DeviceService
 
     def get(self, request):

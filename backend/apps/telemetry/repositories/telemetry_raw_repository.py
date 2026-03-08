@@ -6,6 +6,8 @@ from django.db import connection
 
 
 class TelemetryRawRepository:
+    """Fetches paginated raw telemetry rows with optional filters and sorting."""
+
     SORT_FIELDS = {
         "device_name": "d.device_name",
         "metric_name": "r.metric_name",
@@ -39,6 +41,7 @@ class TelemetryRawRepository:
             params.append(f"%{device_name}%")
 
         where_sql = " AND ".join(where_clauses)
+        # Restrict ORDER BY to known columns; never pass user input directly.
         order_sql = self.SORT_FIELDS.get(sort_by, "r.ts")
         direction = "ASC" if sort_dir.lower() == "asc" else "DESC"
         offset = (page - 1) * page_size
@@ -64,6 +67,7 @@ class TelemetryRawRepository:
         """
 
         with connection.cursor() as cursor:
+            # Count query keeps pagination metadata accurate for UI navigation.
             cursor.execute(count_sql, params)
             total_rows = cursor.fetchone()[0]
 
@@ -77,6 +81,7 @@ class TelemetryRawRepository:
                 try:
                     row["attributes"] = json.loads(attributes)
                 except json.JSONDecodeError:
+                    # Preserve malformed payload instead of dropping telemetry row.
                     row["attributes"] = {"raw": attributes}
 
         total_pages = (total_rows + page_size - 1) // page_size if total_rows > 0 else 0

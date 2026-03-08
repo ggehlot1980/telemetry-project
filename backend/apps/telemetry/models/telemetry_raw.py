@@ -4,6 +4,8 @@ from apps.telemetry.models.device import Device
 
 
 class TelemetryRaw(models.Model):
+    """Unmanaged mapping of raw telemetry events."""
+
     device = models.ForeignKey(Device, on_delete=models.DO_NOTHING, db_column="device_id")
     metric_name = models.TextField()
     metric_value = models.FloatField(blank=True, null=True)

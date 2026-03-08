@@ -33,6 +33,7 @@ export class TelemetryApiService {
       .set('page', String(query.page))
       .set('page_size', String(query.page_size));
 
+    // Optional filters are only sent when present to keep query strings minimal.
     if (query.sort_by) {
       params = params.set('sort_by', query.sort_by);
     }
