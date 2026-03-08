@@ -50,7 +50,33 @@ button[disabled] {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 0.7rem;
   margin-top: 0.8rem;
+}
+
+.pager-controls,
+.pager-jump {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.page-number {
+  min-width: 2.2rem;
+  padding: 0.45rem 0.6rem;
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.page-number.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.pager-jump input {
+  width: 6.4rem;
 }
 
 .error {

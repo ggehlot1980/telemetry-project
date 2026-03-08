@@ -18,6 +18,7 @@ import { TelemetryApiService } from '../../core/services/telemetry-api.service';
 })
 export class RawTelemetryComponent implements OnInit {
   readonly pageSize = 50;
+  readonly pageWindowSize = 7;
 
   devices: Device[] = [];
   selectedDeviceId?: number;
@@ -32,6 +33,7 @@ export class RawTelemetryComponent implements OnInit {
   errorMessage = '';
 
   page = 1;
+  pageJumpValue: number | null = null;
   totalPages = 0;
   totalRows = 0;
 
@@ -90,19 +92,61 @@ export class RawTelemetryComponent implements OnInit {
   }
 
   previousPage(): void {
-    if (this.page <= 1) {
-      return;
-    }
-    this.page -= 1;
-    this.loadRows();
+    this.goToPage(this.page - 1);
   }
 
   nextPage(): void {
-    if (this.page >= this.totalPages) {
+    this.goToPage(this.page + 1);
+  }
+
+  firstPage(): void {
+    this.goToPage(1);
+  }
+
+  lastPage(): void {
+    if (this.totalPages > 0) {
+      this.goToPage(this.totalPages);
+    }
+  }
+
+  jumpToPage(): void {
+    if (this.pageJumpValue === null || this.pageJumpValue === undefined) {
       return;
     }
-    this.page += 1;
+    if (!Number.isFinite(this.pageJumpValue)) {
+      return;
+    }
+
+    const requestedPage = Math.trunc(this.pageJumpValue);
+    const maxPage = Math.max(this.totalPages, 1);
+    const boundedPage = Math.max(1, Math.min(requestedPage, maxPage));
+    this.pageJumpValue = boundedPage;
+    this.goToPage(boundedPage);
+  }
+
+  goToPage(targetPage: number): void {
+    if (!Number.isFinite(targetPage)) {
+      return;
+    }
+
+    const maxPage = Math.max(this.totalPages, 1);
+    const boundedPage = Math.max(1, Math.min(Math.trunc(targetPage), maxPage));
+    if (boundedPage === this.page) {
+      return;
+    }
+    this.page = boundedPage;
     this.loadRows();
+  }
+
+  get visiblePages(): number[] {
+    const maxPage = Math.max(this.totalPages, 1);
+    const halfWindow = Math.floor(this.pageWindowSize / 2);
+
+    let start = Math.max(1, this.page - halfWindow);
+    let end = Math.min(maxPage, start + this.pageWindowSize - 1);
+    start = Math.max(1, end - this.pageWindowSize + 1);
+
+    return Array.from({ length: end - start + 1 }, (_, index) => start + index);
   }
 
   private loadDevices(): void {

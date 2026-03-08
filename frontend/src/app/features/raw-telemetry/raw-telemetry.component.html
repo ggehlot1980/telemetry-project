@@ -47,8 +47,35 @@
   ></ag-grid-angular>
 
   <div class="pagination">
-    <button type="button" (click)="previousPage()" [disabled]="page <= 1">Previous</button>
-    <span>Page {{ page }} / {{ totalPages || 1 }} | Total Rows: {{ totalRows }}</span>
-    <button type="button" (click)="nextPage()" [disabled]="page >= totalPages">Next</button>
+    <div class="pager-controls">
+      <button type="button" (click)="firstPage()" [disabled]="page <= 1">First</button>
+      <button type="button" (click)="previousPage()" [disabled]="page <= 1">Previous</button>
+
+      <button
+        type="button"
+        class="page-number"
+        *ngFor="let pageNumber of visiblePages"
+        [class.active]="pageNumber === page"
+        (click)="goToPage(pageNumber)"
+      >
+        {{ pageNumber }}
+      </button>
+
+      <button type="button" (click)="nextPage()" [disabled]="page >= totalPages">Next</button>
+      <button type="button" (click)="lastPage()" [disabled]="page >= totalPages">Last</button>
+    </div>
+
+    <div class="pager-jump">
+      <span>Page {{ page }} / {{ totalPages || 1 }} | Total Rows: {{ totalRows }}</span>
+      <input
+        type="number"
+        min="1"
+        [max]="totalPages || 1"
+        [(ngModel)]="pageJumpValue"
+        (keyup.enter)="jumpToPage()"
+        placeholder="Go to page"
+      />
+      <button type="button" (click)="jumpToPage()">Go</button>
+    </div>
   </div>
 </section>
