@@ -1,6 +1,7 @@
 version: "3.9"
 
 services:
+
   timescaledb:
     image: timescale/timescaledb:latest-pg16
     container_name: timescaledb
@@ -14,10 +15,16 @@ services:
       - timescaledb_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     restart: unless-stopped
+
   redis:
-    image: redis-server
+    image: redis:7
+    container_name: redis
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
 
 volumes:
   timescaledb_data:
+  redis_data:
