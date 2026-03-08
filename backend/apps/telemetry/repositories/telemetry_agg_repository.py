@@ -18,7 +18,6 @@ class TelemetryAggregateRepository:
         device_id: int,
         start_time: datetime,
         end_time: datetime,
-        metrics: list[str],
     ) -> list[dict[str, Any]]:
         if table_name not in self.ALLOWED_AGG_TABLES:
             raise ValueError(f"Unsupported aggregate table: {table_name}")
@@ -37,10 +36,9 @@ class TelemetryAggregateRepository:
             WHERE device_id = %s
               AND bucket >= %s
               AND bucket <= %s
-              AND metric_name = ANY(%s)
             ORDER BY bucket ASC, metric_name ASC
         """
-        params = [device_id, start_time, end_time, metrics]
+        params = [device_id, start_time, end_time]
 
         with connection.cursor() as cursor:
             cursor.execute(sql, params)

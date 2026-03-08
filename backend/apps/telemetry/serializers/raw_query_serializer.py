@@ -16,9 +16,7 @@ class RawTelemetryQuerySerializer(serializers.Serializer):
     )
     sort_dir = serializers.ChoiceField(required=False, choices=["asc", "desc"], default="desc")
 
-    metric_name = serializers.ChoiceField(
-        required=False, choices=["cpu_usage", "temperature", "battery_level"]
-    )
+    metric_name = serializers.CharField(required=False, allow_blank=False)
     device_name = serializers.CharField(required=False, allow_blank=False)
 
     def validate(self, attrs):

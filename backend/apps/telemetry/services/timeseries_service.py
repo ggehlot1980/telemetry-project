@@ -11,7 +11,6 @@ from apps.telemetry.repositories import TelemetryAggregateRepository
 
 
 class TelemetryTimeseriesService:
-    METRICS = ["cpu_usage", "temperature", "battery_level"]
     STATS = ["min", "max", "avg"]
     MAX_POINTS = 300
 
@@ -44,7 +43,6 @@ class TelemetryTimeseriesService:
             device_id=device_id,
             start_time=start_time,
             end_time=end_time,
-            metrics=self.METRICS,
         )
         payload = self._build_payload(device_id, start_time, end_time, selection.table_name, selection.expected_buckets, rows)
 
@@ -65,29 +63,30 @@ class TelemetryTimeseriesService:
         expected_buckets: int,
         rows: list[dict[str, Any]],
     ) -> dict[str, Any]:
-        series_data: dict[tuple[str, str], list[dict[str, Any]]] = defaultdict(list)
+        selected_metric_name = self._select_metric_name(rows)
+        series_data: dict[str, list[dict[str, Any]]] = defaultdict(list)
         unique_buckets: set[str] = set()
 
         for row in rows:
             metric_name = row["metric_name"]
+            if selected_metric_name and metric_name != selected_metric_name:
+                continue
             bucket = row["bucket"].astimezone(UTC).isoformat()
             unique_buckets.add(bucket)
-            series_data[(metric_name, "min")].append({"bucket": bucket, "value": row["min_val"]})
-            series_data[(metric_name, "max")].append({"bucket": bucket, "value": row["max_val"]})
-            series_data[(metric_name, "avg")].append({"bucket": bucket, "value": row["avg_val"]})
+            series_data["min"].append({"bucket": bucket, "value": row["min_val"]})
+            series_data["max"].append({"bucket": bucket, "value": row["max_val"]})
+            series_data["avg"].append({"bucket": bucket, "value": row["avg_val"]})
 
         series = []
-        for metric_name in self.METRICS:
-            for stat in self.STATS:
-                points = self._downsample_points(series_data.get((metric_name, stat), []))
-                series.append(
-                    {
-                        "id": f"{metric_name}_{stat}",
-                        "metric_name": metric_name,
-                        "stat": stat,
-                        "points": points,
-                    }
-                )
+        for stat in self.STATS:
+            points = self._downsample_points(series_data.get(stat, []))
+            series.append(
+                {
+                    "id": stat,
+                    "stat": stat,
+                    "points": points,
+                }
+            )
 
         return {
             "meta": {
@@ -97,9 +96,21 @@ class TelemetryTimeseriesService:
                 "source_table": source_table,
                 "expected_bucket_count": expected_buckets,
                 "bucket_count": len(unique_buckets),
+                "metric_name": selected_metric_name,
             },
             "series": series,
         }
+
+    def _select_metric_name(self, rows: list[dict[str, Any]]) -> str | None:
+        if not rows:
+            return None
+
+        buckets_per_metric: dict[str, set[datetime]] = defaultdict(set)
+        for row in rows:
+            buckets_per_metric[row["metric_name"]].add(row["bucket"])
+
+        ranked_metrics = sorted(buckets_per_metric.items(), key=lambda item: (-len(item[1]), item[0]))
+        return ranked_metrics[0][0]
 
     def _downsample_points(self, points: list[dict[str, Any]]) -> list[dict[str, Any]]:
         if len(points) <= self.MAX_POINTS:

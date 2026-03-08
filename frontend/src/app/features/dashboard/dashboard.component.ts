@@ -75,6 +75,8 @@ export class DashboardComponent implements OnInit {
   }
 
   private buildChartOptions(response: TimeseriesResponse): Highcharts.Options {
+    const metricName = response.meta.metric_name ?? 'Metric';
+    const yAxisTitle = response.meta.metric_name ?? 'Metric Value';
     const series: Highcharts.SeriesLineOptions[] = response.series
       .map((line) => {
         const data: Array<[number, number | null]> = line.points
@@ -91,7 +93,7 @@ export class DashboardComponent implements OnInit {
         return {
           type: 'line' as const,
           id: line.id,
-          name: `${line.metric_name} ${line.stat}`,
+          name: `${metricName} ${line.stat}`,
           showInLegend: true,
           data
         };
@@ -104,7 +106,7 @@ export class DashboardComponent implements OnInit {
         zooming: { type: 'x' }
       },
       title: {
-        text: `Device ${response.meta.device_id} Metrics`
+        text: `Device ${response.meta.device_id} | ${metricName}`
       },
       subtitle: {
         text: `Source: ${response.meta.source_table} | Cache hit: ${response.meta.cache_hit}`
@@ -114,7 +116,7 @@ export class DashboardComponent implements OnInit {
         title: { text: 'Time' }
       },
       yAxis: {
-        title: { text: 'Metric Value' }
+        title: { text: yAxisTitle }
       },
       plotOptions: {
         series: {

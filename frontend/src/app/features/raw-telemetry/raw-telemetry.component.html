@@ -12,12 +12,7 @@
 
     <label>
       Metric
-      <select [(ngModel)]="metricName">
-        <option value="">All metrics</option>
-        <option value="cpu_usage">cpu_usage</option>
-        <option value="temperature">temperature</option>
-        <option value="battery_level">battery_level</option>
-      </select>
+      <input type="text" [(ngModel)]="metricName" placeholder="All metrics (exact match)" />
     </label>
 
     <label>

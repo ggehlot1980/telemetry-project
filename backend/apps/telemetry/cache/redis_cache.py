@@ -22,4 +22,4 @@ class RedisCacheClient:
 
     @staticmethod
     def build_timeseries_key(device_id: int, start_iso: str, end_iso: str) -> str:
-        return f"telemetry:timeseries:{device_id}:{start_iso}:{end_iso}"
+        return f"telemetry:timeseries:v2:{device_id}:{start_iso}:{end_iso}"

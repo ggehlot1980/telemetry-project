@@ -5,7 +5,6 @@ export interface TimeseriesPoint {
 
 export interface TimeseriesSeries {
   id: string;
-  metric_name: 'cpu_usage' | 'temperature' | 'battery_level';
   stat: 'min' | 'max' | 'avg';
   points: TimeseriesPoint[];
 }
@@ -19,6 +18,7 @@ export interface TimeseriesResponse {
     expected_bucket_count: number;
     bucket_count: number;
     cache_hit: boolean;
+    metric_name: string | null;
   };
   series: TimeseriesSeries[];
 }
