@@ -1,0 +1,13 @@
+<div class="app-layout">
+  <header class="topbar">
+    <h1>Telemetry Analytics</h1>
+    <nav>
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Dashboard</a>
+      <a routerLink="/raw-telemetry" routerLinkActive="active">Raw Telemetry</a>
+    </nav>
+  </header>
+
+  <main>
+    <router-outlet></router-outlet>
+  </main>
+</div>

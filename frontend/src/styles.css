@@ -1,0 +1,28 @@
+@import 'ag-grid-community/styles/ag-grid.css';
+@import 'ag-grid-community/styles/ag-theme-alpine.css';
+
+:root {
+  --page-bg: #f2f4f8;
+  --surface: #ffffff;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --accent: #0f766e;
+  --border: #d4d8df;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--text);
+  background: radial-gradient(circle at top right, #e8f5f3, var(--page-bg) 40%);
+}
+
+button {
+  cursor: pointer;
+}

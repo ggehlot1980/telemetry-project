@@ -1,0 +1,42 @@
+# Node / Angular
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+frontend/.angular/
+frontend/.cache/
+
+# Python / Django
+__pycache__/
+backend/**/__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+env/
+backend/.venv/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

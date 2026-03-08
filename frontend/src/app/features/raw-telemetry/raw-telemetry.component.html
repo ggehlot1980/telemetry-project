@@ -1,0 +1,59 @@
+<section class="panel">
+  <div class="controls">
+    <label>
+      Device
+      <select [(ngModel)]="selectedDeviceId">
+        <option [ngValue]="undefined">All devices</option>
+        <option *ngFor="let device of devices" [ngValue]="device.device_id">
+          {{ device.device_name || ('Device ' + device.device_id) }}
+        </option>
+      </select>
+    </label>
+
+    <label>
+      Metric
+      <select [(ngModel)]="metricName">
+        <option value="">All metrics</option>
+        <option value="cpu_usage">cpu_usage</option>
+        <option value="temperature">temperature</option>
+        <option value="battery_level">battery_level</option>
+      </select>
+    </label>
+
+    <label>
+      Device name filter
+      <input type="text" [(ngModel)]="deviceNameFilter" placeholder="Contains..." />
+    </label>
+
+    <label>
+      Start
+      <input type="datetime-local" [(ngModel)]="startTime" />
+    </label>
+
+    <label>
+      End
+      <input type="datetime-local" [(ngModel)]="endTime" />
+    </label>
+
+    <button type="button" (click)="refresh()">Refresh</button>
+  </div>
+
+  <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+  <p class="status" *ngIf="loading">Loading raw telemetry...</p>
+
+  <ag-grid-angular
+    class="ag-theme-alpine grid"
+    [rowData]="rowData"
+    [columnDefs]="columnDefs"
+    [defaultColDef]="defaultColDef"
+    [animateRows]="true"
+    (gridReady)="onGridReady($event)"
+    (sortChanged)="onSortChanged($event)"
+  ></ag-grid-angular>
+
+  <div class="pagination">
+    <button type="button" (click)="previousPage()" [disabled]="page <= 1">Previous</button>
+    <span>Page {{ page }} / {{ totalPages || 1 }} | Total Rows: {{ totalRows }}</span>
+    <button type="button" (click)="nextPage()" [disabled]="page >= totalPages">Next</button>
+  </div>
+</section>

@@ -1,0 +1,36 @@
+<section class="panel">
+  <div class="controls">
+    <label>
+      Device
+      <select [(ngModel)]="selectedDeviceId">
+        <option [ngValue]="null" disabled>Select a device</option>
+        <option *ngFor="let device of devices" [ngValue]="device.device_id">
+          {{ device.device_name || ('Device ' + device.device_id) }}
+        </option>
+      </select>
+    </label>
+
+    <label>
+      Start
+      <input type="datetime-local" [(ngModel)]="startTime" />
+    </label>
+
+    <label>
+      End
+      <input type="datetime-local" [(ngModel)]="endTime" />
+    </label>
+
+    <button type="button" (click)="refresh()">Refresh</button>
+  </div>
+
+  <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+  <p class="status" *ngIf="loading">Loading timeseries...</p>
+
+  <highcharts-chart
+    [Highcharts]="Highcharts"
+    [options]="chartOptions"
+    [(update)]="updateFlag"
+    [oneToOne]="oneToOneFlag"
+    style="width: 100%; height: 560px; display: block"
+  ></highcharts-chart>
+</section>
