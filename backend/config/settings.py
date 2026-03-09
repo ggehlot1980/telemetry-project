@@ -100,5 +100,9 @@ if secure_proxy_ssl_header and "," in secure_proxy_ssl_header:
     header_name, header_value = [part.strip() for part in secure_proxy_ssl_header.split(",", 1)]
     SECURE_PROXY_SSL_HEADER = (header_name, header_value)
 
-REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
+REDIS_URL = os.getenv("REDIS_URL", "redis://127.0.0.1:6379/0")
+REDIS_SOCKET_CONNECT_TIMEOUT_SECONDS = float(
+    os.getenv("REDIS_SOCKET_CONNECT_TIMEOUT_SECONDS", "0.2")
+)
+REDIS_SOCKET_TIMEOUT_SECONDS = float(os.getenv("REDIS_SOCKET_TIMEOUT_SECONDS", "0.2"))
 CACHE_TTL_SECONDS = int(os.getenv("CACHE_TTL_SECONDS", "30"))

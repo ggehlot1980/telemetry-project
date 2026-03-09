@@ -1,26 +1,39 @@
 <section class="panel">
   <div class="controls">
-    <label>
-      Device
-      <select [(ngModel)]="selectedDeviceId">
-        <option [ngValue]="null" disabled>Select a device</option>
-        <option *ngFor="let device of devices" [ngValue]="device.device_id">
-          {{ device.device_name || ('Device ' + device.device_id) }}
-        </option>
-      </select>
-    </label>
+    <div class="filters">
+      <label>
+        Device
+        <select [(ngModel)]="selectedDeviceId">
+          <option [ngValue]="null" disabled>Select a device</option>
+          <option *ngFor="let device of devices" [ngValue]="device.device_id">
+            {{ device.device_name || ('Device ' + device.device_id) }}
+          </option>
+        </select>
+      </label>
 
-    <label>
-      Start
-      <input type="datetime-local" [(ngModel)]="startTime" />
-    </label>
+      <label>
+        Start
+        <input type="datetime-local" [(ngModel)]="startTime" />
+      </label>
 
-    <label>
-      End
-      <input type="datetime-local" [(ngModel)]="endTime" />
-    </label>
+      <label>
+        End
+        <input type="datetime-local" [(ngModel)]="endTime" />
+      </label>
+    </div>
 
-    <button type="button" (click)="refresh()">Refresh</button>
+    <button type="button" class="refresh-button" (click)="refresh()" aria-label="Refresh dashboard">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path
+          d="M20 12a8 8 0 1 1-2.34-5.66M20 4v6h-6"
+          fill="none"
+          stroke="currentColor"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+        ></path>
+      </svg>
+    </button>
   </div>
 
   <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>

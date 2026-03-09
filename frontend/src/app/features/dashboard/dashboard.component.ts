@@ -76,8 +76,8 @@ export class DashboardComponent implements OnInit {
   }
 
   private buildChartOptions(response: TimeseriesResponse): Highcharts.Options {
-    const metricName = response.meta.metric_name ?? 'Metric';
-    const yAxisTitle = response.meta.metric_name ?? 'Metric Value';
+    const metricName = this.formatMetricName(response.meta.metric_name ?? 'Metric');
+    const yAxisTitle = metricName;
     const series: Highcharts.SeriesLineOptions[] = response.series
       .map((line) => {
         // Convert API points into [x, y] tuples expected by Highcharts datetime series.
@@ -141,6 +141,10 @@ export class DashboardComponent implements OnInit {
       credits: { enabled: false },
       series: series.length > 0 ? series : []
     };
+  }
+
+  private formatMetricName(metricName: string): string {
+    return metricName.replace(/_/g, ' ').toUpperCase();
   }
 
   private createDefaultChartOptions(): Highcharts.Options {

@@ -6,11 +6,18 @@
 }
 
 .controls {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(160px, 1fr));
-  gap: 0.8rem;
+  display: flex;
+  justify-content: space-between;
   align-items: end;
+  gap: 1rem;
   margin-bottom: 0.8rem;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(170px, 1fr));
+  gap: 0.8rem;
+  flex: 1;
 }
 
 label {
@@ -23,18 +30,35 @@ label {
 
 select,
 input {
+  width: 100%;
   border: 1px solid var(--border);
   border-radius: 0.35rem;
   padding: 0.45rem 0.55rem;
+  background: #fff;
 }
 
-button {
-  border: none;
-  border-radius: 0.35rem;
+.refresh-button {
+  width: 2.55rem;
+  height: 2.55rem;
+  border: 1px solid transparent;
+  border-radius: 0.45rem;
   background: var(--accent);
   color: #fff;
-  padding: 0.55rem 0.9rem;
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.refresh-button svg {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+input[type='datetime-local']::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.9;
+  margin-right: 0;
 }
 
 .error {
@@ -49,6 +73,15 @@ button {
 
 @media (max-width: 920px) {
   .controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filters {
     grid-template-columns: 1fr;
+  }
+
+  .refresh-button {
+    align-self: flex-end;
   }
 }

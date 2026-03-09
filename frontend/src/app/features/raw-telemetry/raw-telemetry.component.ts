@@ -44,22 +44,38 @@ export class RawTelemetryComponent implements OnInit {
   private gridApi?: GridApi<RawTelemetryRow>;
 
   columnDefs: ColDef<RawTelemetryRow>[] = [
-    { field: 'device_name', headerName: 'Device Name', sortable: true, filter: true, minWidth: 140 },
-    { field: 'metric_name', headerName: 'Metric Name', sortable: true, filter: true, minWidth: 130 },
-    { field: 'metric_value', headerName: 'Metric Value', sortable: true, filter: 'agNumberColumnFilter', minWidth: 120 },
-    { field: 'timestamp', headerName: 'Timestamp', sortable: true, filter: 'agDateColumnFilter', minWidth: 190 },
+    { field: 'device_name', headerName: 'Device Name', sortable: true, filter: true, minWidth: 140, flex: 1.1 },
+    { field: 'metric_name', headerName: 'Metric Name', sortable: true, filter: true, minWidth: 130, flex: 1 },
+    {
+      field: 'metric_value',
+      headerName: 'Metric Value',
+      sortable: true,
+      filter: 'agNumberColumnFilter',
+      minWidth: 120,
+      flex: 1
+    },
+    {
+      field: 'timestamp',
+      headerName: 'Timestamp',
+      sortable: true,
+      filter: 'agDateColumnFilter',
+      minWidth: 190,
+      flex: 1.3
+    },
     {
       field: 'attributes',
       headerName: 'Attributes',
       sortable: false,
       filter: true,
       minWidth: 240,
+      flex: 2.2,
       valueFormatter: (params) => JSON.stringify(params.value ?? {})
     }
   ];
 
   defaultColDef: ColDef = {
     resizable: true,
+    flex: 1,
     floatingFilter: true
   };
 

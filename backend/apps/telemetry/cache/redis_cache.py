@@ -7,7 +7,12 @@ from django.conf import settings
 
 class RedisCacheClient:
     def __init__(self) -> None:
-        self._client = redis.Redis.from_url(settings.REDIS_URL, decode_responses=True)
+        self._client = redis.Redis.from_url(
+            settings.REDIS_URL,
+            decode_responses=True,
+            socket_connect_timeout=settings.REDIS_SOCKET_CONNECT_TIMEOUT_SECONDS,
+            socket_timeout=settings.REDIS_SOCKET_TIMEOUT_SECONDS,
+        )
         self._ttl = settings.CACHE_TTL_SECONDS
 
     def get_json(self, key: str) -> Optional[dict[str, Any]]:

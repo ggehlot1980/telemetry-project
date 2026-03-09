@@ -6,11 +6,18 @@
 }
 
 .controls {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(130px, 1fr));
-  gap: 0.7rem;
+  display: flex;
+  justify-content: space-between;
   align-items: end;
+  gap: 0.7rem;
   margin-bottom: 0.8rem;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(130px, 1fr));
+  gap: 0.7rem;
+  flex: 1;
 }
 
 label {
@@ -75,6 +82,23 @@ button[disabled] {
   color: #fff;
 }
 
+.refresh-button {
+  width: 2.55rem;
+  height: 2.55rem;
+  border: 1px solid transparent;
+  border-radius: 0.45rem;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.refresh-button svg {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
 .pager-jump input {
   width: 6.4rem;
 }
@@ -90,7 +114,7 @@ button[disabled] {
 }
 
 @media (max-width: 1180px) {
-  .controls {
+  .filters {
     grid-template-columns: repeat(2, minmax(130px, 1fr));
   }
 
@@ -103,6 +127,15 @@ button[disabled] {
 
 @media (max-width: 700px) {
   .controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filters {
     grid-template-columns: 1fr;
+  }
+
+  .refresh-button {
+    align-self: flex-end;
   }
 }

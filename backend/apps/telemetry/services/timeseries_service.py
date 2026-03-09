@@ -30,6 +30,7 @@ class TelemetryTimeseriesService:
         start_iso = start_time.astimezone(UTC).isoformat()
         end_iso = end_time.astimezone(UTC).isoformat()
         cache_key = self._cache.build_timeseries_key(device_id=device_id, start_iso=start_iso, end_iso=end_iso)
+        cache_available = True
 
         try:
             # Fast path: return precomputed payload for the exact interval.
@@ -38,7 +39,7 @@ class TelemetryTimeseriesService:
                 cached["meta"]["cache_hit"] = True
                 return cached
         except redis.RedisError:
-            pass
+            cache_available = False
 
         selection = self._router.select(start_time=start_time, end_time=end_time)
         rows = self._agg_repository.fetch_timeseries(
@@ -50,10 +51,11 @@ class TelemetryTimeseriesService:
         # Response shape is normalized here so frontend does not know DB schema details.
         payload = self._build_payload(device_id, start_time, end_time, selection.table_name, selection.expected_buckets, rows)
 
-        try:
-            self._cache.set_json(cache_key, payload)
-        except redis.RedisError:
-            pass
+        if cache_available:
+            try:
+                self._cache.set_json(cache_key, payload)
+            except redis.RedisError:
+                pass
 
         payload["meta"]["cache_hit"] = False
         return payload
