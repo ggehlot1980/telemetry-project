@@ -1,71 +1,105 @@
-/* ============================================================
-   Insert devices
-   ============================================================ */
+---------------------------------------------------------
+-- PERFORMANCE SETTINGS
+---------------------------------------------------------
+
+SET synchronous_commit = OFF;
+SET work_mem = '256MB';
+SET maintenance_work_mem = '1GB';
+
+---------------------------------------------------------
+-- CREATE DEVICES
+---------------------------------------------------------
 
 INSERT INTO devices (device_id, device_name, device_type, tags)
-SELECT
-  i,
-  'device-' || i,
-  CASE
-    WHEN i % 3 = 0 THEN 'temperature_sensor'
-    WHEN i % 3 = 1 THEN 'cpu_monitor'
-    ELSE 'battery_sensor'
-  END,
-  jsonb_build_object(
-    'location', 'site-' || (i % 5),
-    'firmware', 'v1.' || (i % 3),
-    'group', 'test-lab'
-  )
-FROM generate_series(1,20) AS i
+VALUES
+(1, 'device-1', 'cpu_sensor', '{"location":"dc-1"}'),
+(2, 'device-2', 'temperature_sensor', '{"location":"warehouse"}'),
+(3, 'device-3', 'battery_sensor', '{"location":"iot-node"}'),
+(4, 'device-4', 'humidity_sensor', '{"location":"lab"}'),
+(5, 'device-5', 'vibration_sensor', '{"location":"factory"}')
 ON CONFLICT (device_id) DO NOTHING;
 
+---------------------------------------------------------
+-- DEFINE TIME RANGE
+---------------------------------------------------------
 
+DO $$
+DECLARE
+    start_ts timestamptz := '2025-01-01';
+    end_ts timestamptz := '2026-03-07';
+    total_rows integer := 10000000;
 
-/* ============================================================
-   Generate ~20M telemetry rows
-   ============================================================ */
+    total_seconds double precision;
+BEGIN
 
-INSERT INTO telemetry_raw (
-    device_id,
-    metric_name,
-    metric_value,
-    attributes,
-    ts
-)
+total_seconds := EXTRACT(EPOCH FROM (end_ts - start_ts));
+
+---------------------------------------------------------
+-- DEVICE 1 CPU
+---------------------------------------------------------
+
+INSERT INTO telemetry_raw(device_id, metric_name, metric_value, attributes, ts)
 SELECT
-    d.device_id,
-    m.metric_name,
+1,
+'cpu_usage',
+20 + random()*80,
+'{}'::jsonb,
+start_ts + ((random()*total_seconds) * interval '1 second')
+FROM generate_series(1,total_rows);
 
-    CASE
-        WHEN m.metric_name = 'temperature'
-            THEN 65 + 10 * sin(gs.i / 200.0) + random() * 2
-        WHEN m.metric_name = 'cpu_usage'
-            THEN 30 + 50 * abs(sin(gs.i / 100.0)) + random() * 10
-        WHEN m.metric_name = 'battery_level'
-            THEN 100 - (gs.i / 5000.0) + random()
-    END
-    +
-    CASE
-        WHEN random() < 0.001 THEN random()*60
-        ELSE 0
-    END,
+---------------------------------------------------------
+-- DEVICE 2 TEMPERATURE
+---------------------------------------------------------
 
-    jsonb_build_object(
-        'sensor_id', 'sensor-' || d.device_id,
-        'status', CASE WHEN random() < 0.01 THEN 'warning' ELSE 'ok' END,
-        'signal_strength', round((random()*20 + 70)::numeric,1)
-    ),
+INSERT INTO telemetry_raw(device_id, metric_name, metric_value, attributes, ts)
+SELECT
+2,
+'temperature',
+25 + sin(i/50000.0)*10 + random()*2,
+'{}'::jsonb,
+start_ts + ((random()*total_seconds) * interval '1 second')
+FROM generate_series(1,total_rows) i;
 
-    timestamp '2026-02-27'
-        + (gs.i * interval '0.0432 seconds')
+---------------------------------------------------------
+-- DEVICE 3 BATTERY
+---------------------------------------------------------
 
-FROM devices d
+INSERT INTO telemetry_raw(device_id, metric_name, metric_value, attributes, ts)
+SELECT
+3,
+'battery_level',
+GREATEST(5,100 - (i/200000.0) + random()),
+'{}'::jsonb,
+start_ts + ((random()*total_seconds) * interval '1 second')
+FROM generate_series(1,total_rows) i;
 
-CROSS JOIN (
-    VALUES
-        ('temperature'),
-        ('cpu_usage'),
-        ('battery_level')
-) AS m(metric_name)
+---------------------------------------------------------
+-- DEVICE 4 HUMIDITY
+---------------------------------------------------------
 
-JOIN generate_series(1,333333) AS gs(i);
+INSERT INTO telemetry_raw(device_id, metric_name, metric_value, attributes, ts)
+SELECT
+4,
+'humidity',
+40 + sin(i/30000.0)*20 + random()*5,
+'{}'::jsonb,
+start_ts + ((random()*total_seconds) * interval '1 second')
+FROM generate_series(1,total_rows) i;
+
+---------------------------------------------------------
+-- DEVICE 5 VIBRATION
+---------------------------------------------------------
+
+INSERT INTO telemetry_raw(device_id, metric_name, metric_value, attributes, ts)
+SELECT
+5,
+'vibration_level',
+CASE
+WHEN random() < 0.01 THEN random()*8
+ELSE random()
+END,
+'{}'::jsonb,
+start_ts + ((random()*total_seconds) * interval '1 second')
+FROM generate_series(1,total_rows);
+
+END $$;
