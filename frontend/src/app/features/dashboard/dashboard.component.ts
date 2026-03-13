@@ -1,6 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSelectModule } from '@angular/material/select';
 import * as Highcharts from 'highcharts';
 import { HighchartsChartModule } from 'highcharts-angular';
 import { finalize } from 'rxjs';
@@ -12,7 +19,18 @@ import { TelemetryApiService } from '../../core/services/telemetry-api.service';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, HighchartsChartModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    HighchartsChartModule,
+    MatButtonModule,
+    MatDatepickerModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatNativeDateModule,
+    MatProgressSpinnerModule,
+    MatSelectModule
+  ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
@@ -25,8 +43,10 @@ export class DashboardComponent implements OnInit {
 
   devices: Device[] = [];
   selectedDeviceId: number | null = null;
-  startTime = this.toDateTimeLocal(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000));
-  endTime = this.toDateTimeLocal(new Date());
+  startDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  startTime = this.toTimeInputValue(this.startDate);
+  endDate = new Date();
+  endTime = this.toTimeInputValue(this.endDate);
 
   loading = false;
   errorMessage = '';
@@ -38,8 +58,19 @@ export class DashboardComponent implements OnInit {
   }
 
   refresh(): void {
-    if (!this.selectedDeviceId || !this.startTime || !this.endTime) {
+    if (!this.selectedDeviceId || !this.startDate || !this.startTime || !this.endDate || !this.endTime) {
       this.errorMessage = 'Please select device and valid date range.';
+      return;
+    }
+
+    const startTimeIso = this.toIso(this.startDate, this.startTime);
+    const endTimeIso = this.toIso(this.endDate, this.endTime);
+    if (!startTimeIso || !endTimeIso) {
+      this.errorMessage = 'Please select a valid date range.';
+      return;
+    }
+    if (Date.parse(startTimeIso) > Date.parse(endTimeIso)) {
+      this.errorMessage = 'Start time must be before end time.';
       return;
     }
 
@@ -47,7 +78,7 @@ export class DashboardComponent implements OnInit {
     this.loading = true;
 
     this.telemetryApi
-      .getTimeseries(this.selectedDeviceId, this.toIso(this.startTime), this.toIso(this.endTime))
+      .getTimeseries(this.selectedDeviceId, startTimeIso, endTimeIso)
       .pipe(finalize(() => (this.loading = false)))
       .subscribe({
         next: (response) => {
@@ -158,12 +189,30 @@ export class DashboardComponent implements OnInit {
     };
   }
 
-  private toIso(value: string): string {
-    return new Date(value).toISOString();
+  private toIso(date: Date | null, time: string): string | null {
+    if (!date || !time) {
+      return null;
+    }
+
+    const [hoursString, minutesString] = time.split(':');
+    const hours = Number(hoursString);
+    const minutes = Number(minutesString);
+    if (!Number.isInteger(hours) || !Number.isInteger(minutes)) {
+      return null;
+    }
+
+    const combined = new Date(date);
+    combined.setHours(hours, minutes, 0, 0);
+    if (Number.isNaN(combined.getTime())) {
+      return null;
+    }
+
+    return combined.toISOString();
   }
 
-  private toDateTimeLocal(value: Date): string {
-    const date = new Date(value.getTime() - value.getTimezoneOffset() * 60000);
-    return date.toISOString().slice(0, 16);
+  private toTimeInputValue(value: Date): string {
+    const hours = value.getHours().toString().padStart(2, '0');
+    const minutes = value.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
   }
 }

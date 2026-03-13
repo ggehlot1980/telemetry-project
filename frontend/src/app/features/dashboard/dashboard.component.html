@@ -1,49 +1,65 @@
-<section class="panel">
-  <div class="controls">
-    <div class="filters">
-      <label>
-        Device
-        <select [(ngModel)]="selectedDeviceId">
-          <option [ngValue]="null" disabled>Select a device</option>
-          <option *ngFor="let device of devices" [ngValue]="device.device_id">
+<section class="app-surface">
+  <div class="mb-4 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+    <div class="grid flex-1 gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Device</mat-label>
+        <mat-select [(ngModel)]="selectedDeviceId">
+          <mat-option [value]="null" disabled>Select a device</mat-option>
+          <mat-option *ngFor="let device of devices" [value]="device.device_id">
             {{ device.device_name || ('Device ' + device.device_id) }}
-          </option>
-        </select>
-      </label>
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
 
-      <label>
-        Start
-        <input type="datetime-local" [(ngModel)]="startTime" />
-      </label>
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Start Date</mat-label>
+        <input matInput [matDatepicker]="startDatePicker" [(ngModel)]="startDate" (click)="startDatePicker.open()" readonly />
+        <mat-datepicker-toggle matIconSuffix [for]="startDatePicker" />
+        <mat-datepicker #startDatePicker />
+      </mat-form-field>
 
-      <label>
-        End
-        <input type="datetime-local" [(ngModel)]="endTime" />
-      </label>
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Start Time</mat-label>
+        <input matInput type="time" [(ngModel)]="startTime" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>End Date</mat-label>
+        <input matInput [matDatepicker]="endDatePicker" [(ngModel)]="endDate" (click)="endDatePicker.open()" readonly />
+        <mat-datepicker-toggle matIconSuffix [for]="endDatePicker" />
+        <mat-datepicker #endDatePicker />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>End Time</mat-label>
+        <input matInput type="time" [(ngModel)]="endTime" />
+      </mat-form-field>
     </div>
 
-    <button type="button" class="refresh-button" (click)="refresh()" aria-label="Refresh dashboard">
-      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <path
-          d="M20 12a8 8 0 1 1-2.34-5.66M20 4v6h-6"
-          fill="none"
-          stroke="currentColor"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-        ></path>
-      </svg>
+    <button
+      mat-flat-button
+      color="primary"
+      class="w-full xl:w-auto"
+      type="button"
+      (click)="refresh()"
+      aria-label="Refresh dashboard"
+    >
+      Refresh
     </button>
   </div>
 
-  <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
-  <p class="status" *ngIf="loading">Loading timeseries...</p>
+  <p class="error-text" *ngIf="errorMessage">{{ errorMessage }}</p>
+  <div class="status-text flex items-center gap-2" *ngIf="loading">
+    <mat-spinner [diameter]="20" />
+    <span>Loading timeseries...</span>
+  </div>
 
   <highcharts-chart
+    class="block w-full"
     [Highcharts]="Highcharts"
     [options]="chartOptions"
     [(update)]="updateFlag"
     [oneToOne]="oneToOneFlag"
-    style="width: 100%; height: 560px; display: block"
+    style="height: 560px"
   ></highcharts-chart>
 </section>

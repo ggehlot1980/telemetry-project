@@ -1,56 +1,66 @@
-<section class="panel">
-  <div class="controls">
-    <div class="filters">
-      <label>
-        Device
-        <select [(ngModel)]="selectedDeviceId">
-          <option [ngValue]="undefined">All devices</option>
-          <option *ngFor="let device of devices" [ngValue]="device.device_id">
+<section class="app-surface">
+  <div class="mb-4 flex flex-col gap-3 2xl:flex-row 2xl:items-end 2xl:justify-between">
+    <div class="grid flex-1 gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Device</mat-label>
+        <mat-select [(ngModel)]="selectedDeviceId">
+          <mat-option [value]="undefined">All devices</mat-option>
+          <mat-option *ngFor="let device of devices" [value]="device.device_id">
             {{ device.device_name || ('Device ' + device.device_id) }}
-          </option>
-        </select>
-      </label>
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
 
-      <label>
-        Metric
-        <input type="text" [(ngModel)]="metricName" placeholder="All metrics (exact match)" />
-      </label>
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Metric</mat-label>
+        <input matInput type="text" [(ngModel)]="metricName" placeholder="All metrics (exact match)" />
+      </mat-form-field>
 
-      <label>
-        Device name filter
-        <input type="text" [(ngModel)]="deviceNameFilter" placeholder="Contains..." />
-      </label>
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Device Name Filter</mat-label>
+        <input matInput type="text" [(ngModel)]="deviceNameFilter" placeholder="Contains..." />
+      </mat-form-field>
 
-      <label>
-        Start
-        <input type="datetime-local" [(ngModel)]="startTime" />
-      </label>
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Start Date</mat-label>
+        <input matInput [matDatepicker]="startDatePicker" [(ngModel)]="startDate" (click)="startDatePicker.open()" readonly />
+        <mat-datepicker-toggle matIconSuffix [for]="startDatePicker" />
+        <mat-datepicker #startDatePicker />
+      </mat-form-field>
 
-      <label>
-        End
-        <input type="datetime-local" [(ngModel)]="endTime" />
-      </label>
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>Start Time</mat-label>
+        <input matInput type="time" [(ngModel)]="startTime" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>End Date</mat-label>
+        <input matInput [matDatepicker]="endDatePicker" [(ngModel)]="endDate" (click)="endDatePicker.open()" readonly />
+        <mat-datepicker-toggle matIconSuffix [for]="endDatePicker" />
+        <mat-datepicker #endDatePicker />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="w-full">
+        <mat-label>End Time</mat-label>
+        <input matInput type="time" [(ngModel)]="endTime" />
+      </mat-form-field>
     </div>
 
-    <button type="button" class="refresh-button" (click)="refresh()" aria-label="Refresh raw telemetry">
-      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <path
-          d="M20 12a8 8 0 1 1-2.34-5.66M20 4v6h-6"
-          fill="none"
-          stroke="currentColor"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-        ></path>
-      </svg>
+    <button mat-flat-button color="primary" type="button" (click)="refresh()" aria-label="Refresh raw telemetry">
+      Refresh
     </button>
   </div>
 
-  <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
-  <p class="status" *ngIf="loading">Loading raw telemetry...</p>
+  <p class="error-text" *ngIf="errorMessage">{{ errorMessage }}</p>
+  <div class="status-text flex items-center gap-2" *ngIf="loading">
+    <mat-spinner [diameter]="20" />
+    <span>Loading raw telemetry...</span>
+  </div>
 
   <ag-grid-angular
-    class="ag-theme-alpine grid"
+    class="telemetry-grid w-full"
+    [class.ag-theme-alpine]="themeService.theme() === 'light'"
+    [class.ag-theme-alpine-dark]="themeService.theme() === 'dark'"
     [rowData]="rowData"
     [columnDefs]="columnDefs"
     [defaultColDef]="defaultColDef"
@@ -59,36 +69,39 @@
     (sortChanged)="onSortChanged($event)"
   ></ag-grid-angular>
 
-  <div class="pagination">
-    <div class="pager-controls">
-      <button type="button" (click)="firstPage()" [disabled]="page <= 1">First</button>
-      <button type="button" (click)="previousPage()" [disabled]="page <= 1">Previous</button>
+  <div class="mt-4 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+    <div class="flex flex-wrap items-center gap-2">
+      <button mat-stroked-button type="button" (click)="firstPage()" [disabled]="page <= 1">First</button>
+      <button mat-stroked-button type="button" (click)="previousPage()" [disabled]="page <= 1">Previous</button>
 
       <button
+        mat-stroked-button
         type="button"
-        class="page-number"
         *ngFor="let pageNumber of visiblePages"
-        [class.active]="pageNumber === page"
+        [color]="pageNumber === page ? 'primary' : undefined"
         (click)="goToPage(pageNumber)"
       >
         {{ pageNumber }}
       </button>
 
-      <button type="button" (click)="nextPage()" [disabled]="page >= totalPages">Next</button>
-      <button type="button" (click)="lastPage()" [disabled]="page >= totalPages">Last</button>
+      <button mat-stroked-button type="button" (click)="nextPage()" [disabled]="page >= totalPages">Next</button>
+      <button mat-stroked-button type="button" (click)="lastPage()" [disabled]="page >= totalPages">Last</button>
     </div>
 
-    <div class="pager-jump">
+    <div class="flex flex-wrap items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
       <span>Page {{ page }} / {{ totalPages || 1 }} | Total Rows: {{ totalRows }}</span>
-      <input
-        type="number"
-        min="1"
-        [max]="totalPages || 1"
-        [(ngModel)]="pageJumpValue"
-        (keyup.enter)="jumpToPage()"
-        placeholder="Go to page"
-      />
-      <button type="button" (click)="jumpToPage()">Go</button>
+      <mat-form-field appearance="outline" class="w-36">
+        <mat-label>Go to page</mat-label>
+        <input
+          matInput
+          type="number"
+          min="1"
+          [max]="totalPages || 1"
+          [(ngModel)]="pageJumpValue"
+          (keyup.enter)="jumpToPage()"
+        />
+      </mat-form-field>
+      <button mat-flat-button color="primary" type="button" (click)="jumpToPage()">Go</button>
     </div>
   </div>
 </section>

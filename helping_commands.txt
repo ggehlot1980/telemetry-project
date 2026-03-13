@@ -1,0 +1,82 @@
+version: "3.9"
+
+services:
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    container_name: timescaledb
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: telemetry
+    volumes:
+      - timescaledb_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+  redis:
+    image: redis
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+volumes:
+  timescaledb_data:
+
+
+docker compose up -d
+
+docker compose down/docker compose down -v (if want to delete the volume too)
+
+docker logs -f timescaledb (docker command to see the logs for the container)
+
+For running sql queries within the timescaledb container
+docker exec -it timescaledb psql -U postgres -d telemetry
+
+For running redis commands within redis container
+docker exec -it redis-server redis-cli
+
+docker cp load_test_data.sql timescaledb:/load_test_data.sql
+docker exec -it timescaledb psql -U postgres -d telemetry -f /load_test_data.sql
+
+SQL commands to confirm that the tables exists after the timescaledb container is up and running.
+SELECT * FROM timescaledb_information.hypertables;
+ hypertable_schema | hypertable_name
+-------------------+-----------------
+ public            | telemetry_raw
+
+SELECT *
+FROM timescaledb_information.continuous_aggregates;
+telemetry_agg_hourly
+telemetry_agg_daily
+telemetry_agg_weekly
+telemetry_agg_monthly
+
+
+
+
+
+
+
+
+Command to run python server
+python manage.py runserver
+
+
+
+
+http://127.0.0.1:8000/api/v1/telemetry/timeseries?device_id=5&start_time=2026-03-01T00:00:00Z&end_time=2026-03-07T23:59:59Z
+
+
+https://github.com/ggehlot1980/telemetry-project.git
+
+Command to run redis container
+docker run -d --name redis-server -p 6379:6379 redis
+
+
+
+psql -U postgres -d telemetry
+\i /load_test_data.sql
+
+
+docker run -d --name timescaledb -p 5432:5432 -v timescaledb_data:/var/lib/postgresql/data -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=telemetry timescale/timescaledb:latest-pg16

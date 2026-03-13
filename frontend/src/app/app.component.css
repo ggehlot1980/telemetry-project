@@ -1,40 +1,9 @@
-.app-layout {
-  min-height: 100vh;
+:host ::ng-deep .active-nav-link.mdc-button {
+  border-color: rgb(37 99 235 / 0.75);
+  color: rgb(30 64 175);
 }
 
-.topbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.85rem 1.2rem;
-  background: #0f172a;
-  color: #f8fafc;
-}
-
-.topbar h1 {
-  margin: 0;
-  font-size: 1.2rem;
-  font-weight: 600;
-}
-
-nav {
-  display: flex;
-  gap: 0.8rem;
-}
-
-nav a {
-  color: #cbd5e1;
-  text-decoration: none;
-  padding: 0.4rem 0.65rem;
-  border-radius: 0.35rem;
-}
-
-nav a.active,
-nav a:hover {
-  color: #f8fafc;
-  background: #1e293b;
-}
-
-main {
-  padding: 1rem;
+:host-context(.dark) ::ng-deep .active-nav-link.mdc-button {
+  border-color: rgb(147 197 253 / 0.7);
+  color: rgb(191 219 254);
 }
